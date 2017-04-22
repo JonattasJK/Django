@@ -1,0 +1,55 @@
+#Esse está no site que vai exportar os dados
+def download(request, id):
+    post = Post.objects.get(id=id)
+    textFile = open("nota.txt", "w")
+    textFile.write(post.nome +"|")
+    textFile.write(str(post.codigo) +"|")
+    textFile.write(post.disciplina +"|")
+    textFile.write(str(post.n1) +"|")
+    textFile.write(str(post.n2) +"|")
+    textFile.write(str(post.n3) +"|")
+    textFile.write(str(post.n4) +"|")
+    textFile.close()
+    return redirect(lista)
+
+#Esse está no site que vai importar os dados
+def novo(request):
+    conn = sqlite3.connect('db.sqlite3')
+    cursor = conn.cursor()
+    FileTxt = open("nota.txt", "r")
+    boletin = FileTxt.read()
+    i = 0
+    nome = ""
+    codigo = ""
+    disciplina = ""
+    n1 = "" 
+    n2 = ""
+    n3 = "" 
+    n4 = ""
+    for char in boletin:
+        if (ord(char) == 124):
+            i += 1
+        elif (i == 0):
+            nome += char
+        elif (i == 1):
+            codigo += char
+        elif (i == 2):
+            disciplina += char
+        elif (i == 3):
+            n1 += char
+        elif (i == 4):
+            n2 += char
+        elif (i == 5):
+            n3 += char
+        elif (i == 6):
+            n4 += char
+    total = (float(n1)+float(n2)+float(n3)+float(n4))/4
+    if (total > 6):
+        cursor.execute("""INSERT INTO importation_take (nome, codigo, disciplina, n1,n2,n3,n4, resultado) 
+        VALUES (?,?,?,?,?,?,?,?)""",(nome, codigo, disciplina, n1,n2,n3,n4, total))
+    else:
+        cursor.execute("""INSERT INTO importation_takebad (nome, codigo, disciplina, n1,n2,n3,n4, resultado) 
+        VALUES (?,?,?,?,?,?,?,?)""",(nome, codigo, disciplina, n1,n2,n3,n4, total))
+    conn.commit()    
+    conn.close() 
+    return redirect(home)
